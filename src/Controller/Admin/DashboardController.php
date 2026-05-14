@@ -51,7 +51,7 @@ class DashboardController extends AbstractDashboardController
         return Dashboard::new()
             ->setFaviconPath('favicon.png')
             ->generateRelativeUrls()
-            ->setTitle('Temporary Fast Mail Admin Dashboard');
+            ->setTitle('TramSangTao Mail Admin Dashboard');
     }
 
     public function configureMenuItems(): iterable

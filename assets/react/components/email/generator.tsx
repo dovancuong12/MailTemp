@@ -71,7 +71,7 @@ const Generator = ({temporaryEmailBox, handleRegenerateEmail}: Props) => {
             <div className="column is-8">
               <p className="has-text-centered has-text-white is-size-6">
                 No more spam, marketing emails, or hacker attacks. Keep your real mailbox safe and
-                tidy with Temp Fast Mail, a free, temporary, anonymous, and secure email address.
+                tidy with TramSangTao Mail, a free, temporary, anonymous, and secure email address.
               </p>
             </div>
           </div>
