@@ -24,6 +24,16 @@ const Application = () => {
       });
   }
 
+  const handleUseCustomName = (name: string): Promise<void> => {
+    return axios.post('/api/email-box/custom', { name })
+      .then(r => {
+        const box = r.data as TemporaryEmailBox;
+        localStorage.setItem('email', box.email);
+        localStorage.setItem('email-uuid', box.uuid);
+        setTemporaryEmailBox(box);
+      });
+  }
+
   useEffect(() => {
     if (temporaryEmailBox === null) {
       const params = new URLSearchParams(window.location.search);
@@ -75,7 +85,11 @@ const Application = () => {
 
   return (
     <>
-      <Generator temporaryEmailBox={temporaryEmailBox} handleRegenerateEmail={handleRegenerateEmail}/>
+      <Generator
+        temporaryEmailBox={temporaryEmailBox}
+        handleRegenerateEmail={handleRegenerateEmail}
+        handleUseCustomName={handleUseCustomName}
+      />
       <Inbox temporaryEmailBox={temporaryEmailBox} />
     </>
   );

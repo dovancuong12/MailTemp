@@ -47,4 +47,17 @@ class DomainRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findOneActiveDomain(): ?Domain
+    {
+        $now = new \DateTimeImmutable();
+
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.activeUntil >= :now')
+            ->setParameter('now', $now)
+            ->orderBy('d.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

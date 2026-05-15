@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\DTO\Request\FindOrCreateCustomEmailBoxRequestDto;
 use App\DTO\Request\ValidateEmailBoxRequestDto;
 use App\DTO\Response\CreateEmailBoxResponseDto;
 use App\DTO\Response\ReceivedEmailResponseDto;
@@ -14,6 +15,7 @@ use App\Service\Client\CloudflareCountryRetriever;
 use App\Service\Handler\ReceivedEmail\ReceivedEmailsFetcher;
 use App\Service\Handler\ReceivedEmail\ReceivedEmailUpdater;
 use App\Service\Handler\TemporaryEmailBox\CreateEmailBoxHandler;
+use App\Service\Handler\TemporaryEmailBox\FindOrCreateCustomEmailBoxHandler;
 use App\Service\Handler\TemporaryEmailBox\TemporaryEmailBoxFetcher;
 use App\Service\Handler\TemporaryEmailBox\TemporaryEmailBoxUpdater;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +36,7 @@ final class EmailBoxController extends AbstractController
         private TemporaryEmailBoxFetcher $temporaryEmailBoxFetcher,
         private TemporaryEmailBoxUpdater $temporaryEmailBoxUpdater,
         private CloudflareCountryRetriever $cloudflareCountryRetriever,
+        private FindOrCreateCustomEmailBoxHandler $findOrCreateCustomEmailBoxHandler,
     ) {
     }
 
@@ -44,6 +47,20 @@ final class EmailBoxController extends AbstractController
         $countryCode = $this->cloudflareCountryRetriever->getCountryCode($request);
 
         $emailBox = $this->createEmailBoxHandler->create($creatorIp, $countryCode);
+
+        return $this->json(CreateEmailBoxResponseDto::fromEntity($emailBox));
+    }
+
+    #[Route('/api/email-box/custom', name: 'api_find_or_create_custom_email_box', methods: ['POST'])]
+    public function findOrCreateCustomEmailBox(
+        Request $request,
+        #[MapRequestPayload] FindOrCreateCustomEmailBoxRequestDto $dto,
+    ): Response
+    {
+        $creatorIp = $this->clientIpRetriever->getClientIp($request);
+        $countryCode = $this->cloudflareCountryRetriever->getCountryCode($request);
+
+        $emailBox = $this->findOrCreateCustomEmailBoxHandler->findOrCreate($dto->name, $creatorIp, $countryCode);
 
         return $this->json(CreateEmailBoxResponseDto::fromEntity($emailBox));
     }

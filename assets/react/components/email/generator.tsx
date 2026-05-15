@@ -5,10 +5,16 @@ import copy from "copy-to-clipboard";
 interface Props {
   temporaryEmailBox: TemporaryEmailBox|null;
   handleRegenerateEmail: () => void;
+  handleUseCustomName: (name: string) => Promise<void>;
 }
 
-const Generator = ({temporaryEmailBox, handleRegenerateEmail}: Props) => {
+const NAME_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/;
+
+const Generator = ({temporaryEmailBox, handleRegenerateEmail, handleUseCustomName}: Props) => {
   const [copied, setCopied] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const [customError, setCustomError] = useState<string | null>(null);
+  const [customBusy, setCustomBusy] = useState(false);
 
   const handleCopy = () => {
     if (temporaryEmailBox === null) {
@@ -22,6 +28,30 @@ const Generator = ({temporaryEmailBox, handleRegenerateEmail}: Props) => {
   const handleRegenerateButtonPress = () => {
     handleRegenerateEmail();
     setCopied(false);
+  }
+
+  const handleCustomSubmit = () => {
+    const trimmed = customName.trim();
+    if (trimmed === "") {
+      setCustomError("Please enter a name.");
+      return;
+    }
+    if (!NAME_PATTERN.test(trimmed) || trimmed.length > 64) {
+      setCustomError("Letters, digits, dot, underscore and hyphen only (max 64).");
+      return;
+    }
+
+    setCustomError(null);
+    setCustomBusy(true);
+    handleUseCustomName(trimmed)
+      .then(() => {
+        setCopied(false);
+        setCustomName("");
+      })
+      .catch(e => {
+        setCustomError(e?.response?.data?.error ?? "Could not use this name.");
+      })
+      .finally(() => setCustomBusy(false));
   }
 
   return (
@@ -64,6 +94,44 @@ const Generator = ({temporaryEmailBox, handleRegenerateEmail}: Props) => {
                 <span className="icon"><i className="fas fa-sync-alt"></i></span>
                 <span>Regenerate Email</span>
               </button>
+            </div>
+          </div>
+
+          <div className="columns is-centered">
+            <div className="column is-8">
+              <p className="has-text-centered has-text-white is-size-6 mb-2">
+                Or pick a custom name (internal use):
+              </p>
+              <div className="field has-addons">
+                <div className="control is-expanded">
+                  <input
+                    className="input is-medium"
+                    type="text"
+                    placeholder="e.g. team-alpha"
+                    value={customName}
+                    disabled={customBusy}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleCustomSubmit();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="control">
+                  <button
+                    className={"button is-primary is-medium" + (customBusy ? " is-loading" : "")}
+                    disabled={customBusy}
+                    onClick={() => handleCustomSubmit()}
+                  >
+                    <span className="icon"><i className="fas fa-check"></i></span>
+                    <span>Use this name</span>
+                  </button>
+                </div>
+              </div>
+              {customError && (
+                <p className="help is-danger has-text-white">{customError}</p>
+              )}
             </div>
           </div>
 
