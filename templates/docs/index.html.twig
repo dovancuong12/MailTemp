@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}API Docs - TramSangTao Mail{% endblock %}
+
+{% set method_class = {
+    'GET': 'is-info',
+    'POST': 'is-success',
+    'PUT': 'is-warning',
+    'PATCH': 'is-warning',
+    'DELETE': 'is-danger',
+} %}
+
+{% block body %}
+<section class="section">
+    <div class="container">
+        <div class="columns">
+            {# Sidebar nav #}
+            <aside class="column is-3 is-hidden-mobile">
+                <div class="box" style="position: sticky; top: 1rem;">
+                    <p class="heading mb-3">Endpoints</p>
+                    {% for group in groups %}
+                        <p class="has-text-weight-semibold mt-3 mb-1">{{ group.title }}</p>
+                        <ul>
+                            {% for ep in group.endpoints %}
+                                <li class="mb-1">
+                                    <a href="#ep-{{ ep.id }}" class="is-size-7">
+                                        <span class="tag {{ method_class[ep.method] ?? 'is-light' }} is-small mr-1">{{ ep.method }}</span>
+                                        <span style="word-break: break-all;">{{ ep.path }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            {# Content #}
+            <div class="column">
+                <h1 class="title">API Documentation</h1>
+                <p class="subtitle is-6 has-text-grey">
+                    Internal API reference for TramSangTao Mail. All endpoints return JSON unless otherwise stated.
+                    Base URL: <code>{{ app.request.schemeAndHttpHost }}</code>
+                </p>
+
+                {% for group in groups %}
+                    <div class="mt-5">
+                        <h2 class="title is-4 mb-1">{{ group.title }}</h2>
+                        <p class="has-text-grey mb-4">{{ group.description }}</p>
+
+                        {% for ep in group.endpoints %}
+                            <div class="box" id="ep-{{ ep.id }}">
+                                <div class="is-flex is-align-items-center is-flex-wrap-wrap mb-3" style="gap: .5rem;">
+                                    <span class="tag {{ method_class[ep.method] ?? 'is-light' }} is-medium has-text-weight-bold">
+                                        {{ ep.method }}
+                                    </span>
+                                    <code class="is-size-6" style="word-break: break-all;">{{ ep.path }}</code>
+                                    {% if ep.auth %}
+                                        <span class="tag is-warning is-light">auth required</span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="mb-3">{{ ep.summary }}</p>
+
+                                {% if ep.notes is defined and ep.notes %}
+                                    <div class="notification is-info is-light py-2 px-3 mb-3 is-size-7">
+                                        <strong>Note:</strong> {{ ep.notes }}
+                                    </div>
+                                {% endif %}
+
+                                {% if ep.request_body is not null %}
+                                    <p class="heading mt-3 mb-1">Request body</p>
+                                    <pre class="p-3" style="border-radius: 6px;"><code>{{ ep.request_body|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</code></pre>
+                                {% endif %}
+
+                                <p class="heading mt-3 mb-1">Response (200/201)</p>
+                                {% if ep.response is iterable %}
+                                    <pre class="p-3" style="border-radius: 6px;"><code>{{ ep.response|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES')) }}</code></pre>
+                                {% else %}
+                                    <pre class="p-3" style="border-radius: 6px;"><code>{{ ep.response }}</code></pre>
+                                {% endif %}
+
+                                <p class="heading mt-3 mb-1">cURL</p>
+                                <pre class="p-3" style="border-radius: 6px;"><code>{{ ep.curl|replace({'{host}': app.request.schemeAndHttpHost}) }}</code></pre>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
