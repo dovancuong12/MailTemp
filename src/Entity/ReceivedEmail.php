@@ -37,7 +37,9 @@ class ReceivedEmail
     #[ORM\Column]
     private array $bccMultiple = [];
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    // length forces Doctrine to map this to LONGTEXT on MySQL (up to 4 GB)
+    // instead of TEXT (64 KB), so large HTML emails are stored in full.
+    #[ORM\Column(type: Types::TEXT, length: 4294967295, nullable: true)]
     private ?string $html = null;
 
     #[ORM\Column]
