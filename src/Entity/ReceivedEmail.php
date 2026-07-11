@@ -153,6 +153,34 @@ class ReceivedEmail
         return $this->html;
     }
 
+    /**
+     * HTML to actually render for this message.
+     *
+     * Some emails (e.g. plain-text Microsoft one-time-code mails) arrive with no
+     * HTML part, so $html is null and the body would show up blank. The Cloudflare
+     * worker still forwards the plain-text body inside metadata ("text" key), so we
+     * fall back to it, HTML-escaped and wrapped, whenever the HTML body is missing.
+     */
+    public function getDisplayHtml(): ?string
+    {
+        if ($this->html !== null && trim($this->html) !== '') {
+            return $this->html;
+        }
+
+        $text = $this->metadata['text'] ?? null;
+
+        if (is_string($text) && trim($text) !== '') {
+            return sprintf(
+                '<div style="white-space:pre-wrap;word-break:break-word;'
+                . 'font-family:system-ui,-apple-system,\'Segoe UI\',Roboto,sans-serif;'
+                . 'font-size:14px;line-height:1.5;padding:12px">%s</div>',
+                htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+            );
+        }
+
+        return $this->html;
+    }
+
     public function setHtml(?string $html): static
     {
         $this->html = $html;

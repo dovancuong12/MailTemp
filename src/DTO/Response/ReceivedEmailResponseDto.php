@@ -25,7 +25,7 @@ class ReceivedEmailResponseDto
             real_to: $email->getRealTo(),
             from_name: $email->getFromName(),
             subject: $email->getSubject() ?? '(no subject)',
-            html: $email->getHtml(),
+            html: $email->getDisplayHtml(),
             received_at: $email->getCreatedAt() ?? new \DateTimeImmutable(),
         );
     }
